@@ -7,13 +7,8 @@ import (
 )
 
 func main() {
-	var comp = "gildaisverynice!!!!"
-	
-	fmt.Printf("commpressed = %s\nlen = %d\n\n", comp, len(comp))
-	fmt.Printf("Alphabet = %s\nlen = %d\n\n", bintree.Alphabet, len(bintree.Alphabet))
+	var comp = "giiilda!!!!"
 
-	fmt.Printf("%d", bintree.CountChar(comp))
-
-	
-
+	fmt.Println(comp + "\n")
+	fmt.Println(bintree.FormatChar(comp))
 }
