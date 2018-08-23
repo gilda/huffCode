@@ -7,8 +7,9 @@ import (
 )
 
 func main() {
-	var comp = "giiilda!!!!"
+	var comp = "gggggiiildda!!!!"
 
-	fmt.Println(comp + "\n")
-	fmt.Println(bintree.FormatChar(comp))
+	fmt.Println(comp)
+	fmt.Println(string(bintree.FormatChar(comp)[:]))
+	fmt.Println(bintree.GenerateTree(comp))
 }
