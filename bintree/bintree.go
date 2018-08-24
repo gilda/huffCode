@@ -1,14 +1,19 @@
 package bintree
 
+import (
+	"fmt"
+)
+
 // Node represents a binary tree's node
 type Node struct {
 	Parent *Node
 	Zero   *Node
 	One    *Node
 	Char   byte
+	Dist   float32
 }
 
-var Alphabet [256]byte = fillAlphabet()
+var alphabet = fillAlphabet()
 
 // fills the alphabet with all the ascii values
 func fillAlphabet() [256]byte {
@@ -19,7 +24,7 @@ func fillAlphabet() [256]byte {
 	return arr
 }
 
-// keeps count of all the characters in the string
+// CountChar keeps count of all the characters in the string
 func CountChar(str string) [256]int {
 	// convert input string to byte array
 	bArray := []byte(str)
@@ -32,7 +37,7 @@ func CountChar(str string) [256]int {
 
 	// keep count
 	for i := 0; i < len(bArray); i++ {
-		ret[bArray[i]] += 1
+		ret[bArray[i]]++
 	}
 	return ret
 }
@@ -47,7 +52,7 @@ func containsByte(a []byte, s byte) bool {
 	return false
 }
 
-// returns the number of unique characters
+// UniqueChars returns the number of unique characters
 func UniqueChars(str string) []byte {
 	var found []byte
 
@@ -65,26 +70,25 @@ func UniqueChars(str string) []byte {
 	return found
 }
 
-// FormatChar
-// sort and cut the CountChar output to start creating the binary tree
+// FormatChar sort and cut the CountChar output to start creating the binary tree
 func FormatChar(str string) []byte {
 	var ret []byte = nil
 	cChar := CountChar(str)
 	notSorted := UniqueChars(str)
 
 	// assign correct size for the returning slice
-	for range notSorted{
+	for range notSorted {
 		ret = append(ret, byte(0))
 	}
 
 	// sort array by the number of all occurences in str
-	for i := range ret{
+	for i := range ret {
 		// search for the largest number of occurences
-		var largest int = 0
-		var char byte = 0
-		for _, v := range notSorted{
+		var largest int
+		var char byte
+		for _, v := range notSorted {
 			// if found largest note
-			if cChar[v] > largest{
+			if cChar[v] > largest {
 				largest = cChar[v]
 				char = v
 			}
@@ -92,7 +96,7 @@ func FormatChar(str string) []byte {
 		// make sure not passing by again on the largest
 		cChar[char] = -1
 		// append to the returned array
-		ret[i] = char 
+		ret[i] = char
 	}
 
 	// return sorted array
@@ -100,9 +104,29 @@ func FormatChar(str string) []byte {
 }
 
 // GenerateTree generates the binary tree according to the formatted array
-func GenerateTree(str string) *Node{
-	//formChar := FormatChar(str)
-	master := Node{Parent: nil, Zero: nil, One: nil}
+func GenerateTree(str string) *Node {
+	// get the distribution of chars in the string
+	formChar := FormatChar(str)
+	cChar := CountChar(str)
 
-	return &master
+	// generate all character nodes with their distributaions
+	var nodes [][]Node
+	nodes = append(nodes, []Node{})
+	for _, v := range formChar {
+		nodes[0] = append(nodes[0], Node{Char: v, Dist: float32(cChar[v]) / float32(len(str))})
+	}
+	fmt.Println(addNode(nodes))
+
+	return nil
+}
+
+// addTreeLayer adds a layer of aprent nodes with the correct encoding
+func addNode(base [][]Node) [][]Node {
+	// TODO figure out when to stop and return types
+	// should maybe be add node. should find two lowest dist nodes in the entire tree.
+	// the new node's dist should be the addition of the lower two.
+	// the lower dist leaf should be a One bit and the higer a Zero bit.
+	// remember to set the parent of the two child nodes as the new node
+	// stop when dist is 1? what if dist is very close to one due to a tolerance error
+	return nil
 }
