@@ -110,23 +110,69 @@ func GenerateTree(str string) *Node {
 	cChar := CountChar(str)
 
 	// generate all character nodes with their distributaions
-	var nodes [][]Node
-	nodes = append(nodes, []Node{})
+	var nodes []Node
 	for _, v := range formChar {
-		nodes[0] = append(nodes[0], Node{Char: v, Dist: float32(cChar[v]) / float32(len(str))})
+		nodes = append(nodes, Node{Char: v, Dist: float32(cChar[v]) / float32(len(str))})
 	}
-	fmt.Println(addNode(nodes))
+	addNode(nodes)
+	fmt.Println(nodes)
 
 	return nil
 }
 
 // addTreeLayer adds a layer of aprent nodes with the correct encoding
-func addNode(base [][]Node) [][]Node {
-	// TODO figure out when to stop and return types
-	// should maybe be add node. should find two lowest dist nodes in the entire tree.
-	// the new node's dist should be the addition of the lower two.
-	// the lower dist leaf should be a One bit and the higer a Zero bit.
-	// remember to set the parent of the two child nodes as the new node
-	// stop when dist is 1? what if dist is very close to one due to a tolerance error
-	return nil
+func addNode(base []Node) {
+	// finds the two parent less nodes with lowest dist
+	lowest, secLowest := findLowestDist(base)
+	// create new node with connections to them
+	added := Node{Zero: secLowest, One: lowest, Dist: lowest.Dist + secLowest.Dist}
+
+	// assign parents
+	lowest.Parent = &added
+	secLowest.Parent = &added
+}
+
+// TODO figure out why parents are not added probably pointer issue
+// findLowestDist finds the node with the lowest dist in the tree
+func findLowestDist(base []Node) (*Node, *Node) {
+	var noParent []Node
+	var s Node
+
+	// get all nodes with no parent
+	for _, v := range base {
+		if v.Parent == nil {
+			noParent = append(noParent, v)
+			continue
+		}
+		for v.Parent != nil {
+			s = *v.Parent
+		}
+		// append new node
+		noParent = append(noParent, s)
+	}
+
+	// this is the last node, we finished building binary tree
+	if len(noParent) == 1 {
+		return &noParent[0], nil
+	}
+
+	var lowest Node
+	var secLowest Node
+	// find two parentless nodes with lowest distribution
+	for i, v := range noParent {
+		if i == 0 {
+			lowest = v
+		} else if i == 1 {
+			secLowest = v
+			// find the lowest distribution
+		} else if v.Dist < lowest.Dist || v.Dist < secLowest.Dist {
+			if v.Dist < lowest.Dist {
+				lowest = v
+			} else {
+				secLowest = v
+			}
+		}
+	}
+
+	return &lowest, &secLowest
 }
