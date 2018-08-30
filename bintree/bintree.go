@@ -13,6 +13,10 @@ type Node struct {
 	Dist   float32
 }
 
+func (n Node) String() string {
+	return fmt.Sprintf("{%p %p %p %d %f}", n.Parent, n.Zero, n.One, n.Char, n.Dist)
+}
+
 var alphabet = fillAlphabet()
 
 // fills the alphabet with all the ascii values
@@ -72,7 +76,7 @@ func UniqueChars(str string) []byte {
 
 // FormatChar sort and cut the CountChar output to start creating the binary tree
 func FormatChar(str string) []byte {
-	var ret []byte = nil
+	var ret []byte
 	cChar := CountChar(str)
 	notSorted := UniqueChars(str)
 
@@ -110,33 +114,42 @@ func GenerateTree(str string) *Node {
 	cChar := CountChar(str)
 
 	// generate all character nodes with their distributaions
-	var nodes []Node
+	var nodes []*Node
 	for _, v := range formChar {
-		nodes = append(nodes, Node{Char: v, Dist: float32(cChar[v]) / float32(len(str))})
+		nodes = append(nodes, &Node{Char: v, Dist: float32(cChar[v]) / float32(len(str))})
 	}
-	addNode(nodes)
-	fmt.Println(nodes)
+
+	// add a node with two leafs of lowest distribution
+	for addNode(nodes) == false {
+		for _, v := range nodes {
+			fmt.Printf("%p -> %s\n", v, *v)
+		}
+	}
 
 	return nil
 }
 
 // addTreeLayer adds a layer of aprent nodes with the correct encoding
-func addNode(base []Node) {
+func addNode(base []*Node) bool {
 	// finds the two parent less nodes with lowest dist
 	lowest, secLowest := findLowestDist(base)
+	// finished building tree, you can stop
+	if secLowest == nil {
+		return true
+	}
 	// create new node with connections to them
 	added := Node{Zero: secLowest, One: lowest, Dist: lowest.Dist + secLowest.Dist}
 
 	// assign parents
 	lowest.Parent = &added
 	secLowest.Parent = &added
+	return false
 }
 
-// TODO figure out why parents are not added probably pointer issue
 // findLowestDist finds the node with the lowest dist in the tree
-func findLowestDist(base []Node) (*Node, *Node) {
-	var noParent []Node
-	var s Node
+func findLowestDist(base []*Node) (*Node, *Node) {
+	var noParent []*Node
+	var s *Node
 
 	// get all nodes with no parent
 	for _, v := range base {
@@ -145,19 +158,21 @@ func findLowestDist(base []Node) (*Node, *Node) {
 			continue
 		}
 		for v.Parent != nil {
-			s = *v.Parent
+			s = v.Parent
+			break
 		}
 		// append new node
 		noParent = append(noParent, s)
 	}
 
+	fmt.Printf("length of noParent: %d\n", len(noParent))
 	// this is the last node, we finished building binary tree
 	if len(noParent) == 1 {
-		return &noParent[0], nil
+		return noParent[0], nil
 	}
 
-	var lowest Node
-	var secLowest Node
+	var lowest *Node
+	var secLowest *Node
 	// find two parentless nodes with lowest distribution
 	for i, v := range noParent {
 		if i == 0 {
@@ -173,6 +188,6 @@ func findLowestDist(base []Node) (*Node, *Node) {
 			}
 		}
 	}
-
-	return &lowest, &secLowest
+	// return the two nodes with the lowest distribution
+	return lowest, secLowest
 }
