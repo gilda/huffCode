@@ -121,12 +121,41 @@ func GenerateTree(str string) *Node {
 
 	// add a node with two leafs of lowest distribution
 	for addNode(nodes) == false {
-		for _, v := range nodes {
-			fmt.Printf("%p -> %s\n", v, *v)
-		}
 	}
 
-	return nil
+	n := nodes[len(nodes)-1]
+	for n.Parent != nil {
+		n = n.Parent
+	}
+
+	PrintTree(n, 0, false)
+
+	// return the master node
+	return n
+}
+
+// PrintTree prints a tree by it's base for debuging
+// base must be sorted by the node's ditribution
+func PrintTree(master *Node, indent int, printMaster bool) {
+	if printMaster {
+		// print the master node
+		fmt.Println("master node: " + master.String())
+	}
+
+	n := master
+	if n.One != nil {
+		PrintTree(n.One, indent+55, false)
+	}
+	if n.Zero != nil {
+		PrintTree(n.Zero, indent+55, false)
+	}
+	if indent != 0 {
+		for i := 0; i < indent; i++ {
+			fmt.Print(" ")
+		}
+	}
+	fmt.Println(n.String())
+
 }
 
 // addTreeLayer adds a layer of aprent nodes with the correct encoding
@@ -150,6 +179,7 @@ func addNode(base []*Node) bool {
 func findLowestDist(base []*Node) (*Node, *Node) {
 	var noParent []*Node
 	var s *Node
+	cont := false
 
 	// get all nodes with no parent
 	for _, v := range base {
@@ -157,15 +187,24 @@ func findLowestDist(base []*Node) (*Node, *Node) {
 			noParent = append(noParent, v)
 			continue
 		}
-		for v.Parent != nil {
-			s = v.Parent
-			break
+		// go up the tree to find a node without a parent
+		s = v
+		for s.Parent != nil {
+			s = s.Parent
 		}
-		// append new node
-		noParent = append(noParent, s)
+		// dont append nodes that are already in the no parent slice
+		for _, j := range noParent {
+			if j == s {
+				cont = true
+				break
+			}
+		}
+		if !cont {
+			// append new node
+			noParent = append(noParent, s)
+		}
 	}
 
-	fmt.Printf("length of noParent: %d\n", len(noParent))
 	// this is the last node, we finished building binary tree
 	if len(noParent) == 1 {
 		return noParent[0], nil
