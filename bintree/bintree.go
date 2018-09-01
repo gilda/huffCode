@@ -13,8 +13,8 @@ type Node struct {
 	Dist   float32
 }
 
-func (n Node) String() string {
-	return fmt.Sprintf("{%p %p %p %d %f}", n.Parent, n.Zero, n.One, n.Char, n.Dist)
+func (n *Node) String() string {
+	return fmt.Sprintf("%p -> {%p %p %p %d %f}", n, n.Parent, n.Zero, n.One, n.Char, n.Dist)
 }
 
 var alphabet = fillAlphabet()
@@ -120,18 +120,17 @@ func GenerateTree(str string) *Node {
 	}
 
 	// add a node with two leafs of lowest distribution
-	for addNode(nodes) == false {
+	for i := 0; addNode(nodes) == false; i++ {
+		n := nodes[len(nodes)-1]
+		for n.Parent != nil {
+			n = n.Parent
+		}
+		//PrintTree(n, 0, false)
+		fmt.Println()
 	}
-
-	n := nodes[len(nodes)-1]
-	for n.Parent != nil {
-		n = n.Parent
-	}
-
-	PrintTree(n, 0, false)
 
 	// return the master node
-	return n
+	return nil
 }
 
 // PrintTree prints a tree by it's base for debuging
@@ -179,10 +178,10 @@ func addNode(base []*Node) bool {
 func findLowestDist(base []*Node) (*Node, *Node) {
 	var noParent []*Node
 	var s *Node
-	cont := false
 
 	// get all nodes with no parent
 	for _, v := range base {
+		cont := false
 		if v.Parent == nil {
 			noParent = append(noParent, v)
 			continue
@@ -192,11 +191,10 @@ func findLowestDist(base []*Node) (*Node, *Node) {
 		for s.Parent != nil {
 			s = s.Parent
 		}
-		// dont append nodes that are already in the no parent slice
+		// dont append nodes that are already in the noParent slice
 		for _, j := range noParent {
 			if j == s {
 				cont = true
-				break
 			}
 		}
 		if !cont {
@@ -205,21 +203,19 @@ func findLowestDist(base []*Node) (*Node, *Node) {
 		}
 	}
 
+	fmt.Println(len(noParent))
+	fmt.Println(noParent)
 	// this is the last node, we finished building binary tree
 	if len(noParent) == 1 {
 		return noParent[0], nil
 	}
 
-	var lowest *Node
-	var secLowest *Node
+	lowest := noParent[0]
+	secLowest := noParent[1]
 	// find two parentless nodes with lowest distribution
-	for i, v := range noParent {
-		if i == 0 {
-			lowest = v
-		} else if i == 1 {
-			secLowest = v
-			// find the lowest distribution
-		} else if v.Dist < lowest.Dist || v.Dist < secLowest.Dist {
+	for _, v := range noParent {
+		// find the lowest distribution
+		if v.Dist < secLowest.Dist {
 			if v.Dist < lowest.Dist {
 				lowest = v
 			} else {
