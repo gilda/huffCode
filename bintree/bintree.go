@@ -1,8 +1,6 @@
 package bintree
 
-import (
-	"fmt"
-)
+import "fmt"
 
 // Node represents a binary tree's node
 type Node struct {
@@ -107,6 +105,33 @@ func FormatChar(str string) []byte {
 	return ret
 }
 
+// GetEncoding returns an array of the characters and the encoding they have associated with them
+func GetEncoding(base []*Node, master *Node) ([]byte, []byte) {
+	var chr []byte
+	var enc []byte
+
+	// initialize encoding array
+	for i := 0; i < len(base); i++ {
+		enc = append(enc, 0x00)
+	}
+
+	// create the char array and the relative encoding
+	for _, v := range base {
+		chr = append(chr, v.Char)
+
+		// find the number of layers
+		nNodes := 0
+		s := v
+		for s.Parent != nil {
+			nNodes++
+			s = s.Parent
+		}
+
+	}
+
+	return nil, nil
+}
+
 // GenerateTree generates the binary tree according to the formatted array
 func GenerateTree(str string) *Node {
 	// get the distribution of chars in the string
@@ -138,10 +163,10 @@ func GenerateTree(str string) *Node {
 func PrintTree(master *Node, indent int) {
 	n := master
 	if n.One != nil {
-		PrintTree(n.One, indent+55, false)
+		PrintTree(n.One, indent+55)
 	}
 	if n.Zero != nil {
-		PrintTree(n.Zero, indent+55, false)
+		PrintTree(n.Zero, indent+55)
 	}
 	if indent != 0 {
 		for i := 0; i < indent; i++ {
@@ -152,7 +177,7 @@ func PrintTree(master *Node, indent int) {
 
 }
 
-// addTreeLayer adds a layer of aprent nodes with the correct encoding
+// addTreeLayer adds a layer of parent nodes with the correct encoding
 func addNode(base []*Node) bool {
 	// finds the two parent less nodes with lowest dist
 	lowest, secLowest := findLowestDist(base)
@@ -198,8 +223,6 @@ func findLowestDist(base []*Node) (*Node, *Node) {
 		}
 	}
 
-	fmt.Println(len(noParent))
-	fmt.Println(noParent)
 	// this is the last node, we finished building binary tree
 	if len(noParent) == 1 {
 		return noParent[0], nil
