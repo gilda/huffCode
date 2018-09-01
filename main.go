@@ -11,5 +11,5 @@ func main() {
 
 	fmt.Println(comp)
 	fmt.Println(string(bintree.FormatChar(comp)[:]))
-	fmt.Println(bintree.GenerateTree(comp))
+	bintree.PrintTree(bintree.GenerateTree(comp), 0)
 }

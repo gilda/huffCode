@@ -121,26 +121,21 @@ func GenerateTree(str string) *Node {
 
 	// add a node with two leafs of lowest distribution
 	for i := 0; addNode(nodes) == false; i++ {
-		n := nodes[len(nodes)-1]
-		for n.Parent != nil {
-			n = n.Parent
-		}
-		//PrintTree(n, 0, false)
-		fmt.Println()
+	}
+
+	// find master node
+	n := nodes[len(nodes)-1]
+	for n.Parent != nil {
+		n = n.Parent
 	}
 
 	// return the master node
-	return nil
+	return n
 }
 
 // PrintTree prints a tree by it's base for debuging
 // base must be sorted by the node's ditribution
-func PrintTree(master *Node, indent int, printMaster bool) {
-	if printMaster {
-		// print the master node
-		fmt.Println("master node: " + master.String())
-	}
-
+func PrintTree(master *Node, indent int) {
 	n := master
 	if n.One != nil {
 		PrintTree(n.One, indent+55, false)
