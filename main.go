@@ -4,12 +4,14 @@ import (
 	"fmt"
 
 	"./bintree"
+	"./huffEncode"
 )
 
 func main() {
-	var comp = "gggggiiildda!!!!"
+	var comp = "bibbity_bobbity"
 
 	fmt.Println(comp)
 	fmt.Println(string(bintree.FormatChar(comp)[:]))
-	bintree.PrintTree(bintree.GenerateTree(comp), 0)
+	huffencode.WriteEncodingToFile(comp, "")
+
 }

@@ -105,142 +105,91 @@ func FormatChar(str string) []byte {
 	return ret
 }
 
-// GetEncoding returns an array of the characters and the encoding they have associated with them
-func GetEncoding(base []*Node, master *Node) ([]byte, []byte) {
-	var chr []byte
-	var enc []byte
-
-	// initialize encoding array
-	for i := 0; i < len(base); i++ {
-		enc = append(enc, 0x00)
-	}
-
-	// create the char array and the relative encoding
-	for _, v := range base {
-		chr = append(chr, v.Char)
-
-		// find the number of layers
-		nNodes := 0
-		s := v
-		for s.Parent != nil {
-			nNodes++
-			s = s.Parent
+// GenTree generate the tree and return the master node
+func GenTree(base []*Node) *Node {
+	// endless loop to get the final tree
+	for {
+		// if only one node has no parents then the tree is done
+		// return the master node
+		if len(findNoParents(base)) == 1 {
+			return findNoParents(base)[0]
 		}
 
-	}
+		// find the lowest distribution nodes and combine them together
+		var lowest, secLowest = findLowestDist(base)
 
-	return nil, nil
+		// create a parent node
+		var par = Node{nil, lowest, secLowest, 0, secLowest.Dist + lowest.Dist}
+
+		// assign the two nodes their parent
+		lowest.Parent = &par
+		secLowest.Parent = &par
+	}
 }
 
-// GenerateTree generates the binary tree according to the formatted array
-func GenerateTree(str string) *Node {
-	// get the distribution of chars in the string
-	formChar := FormatChar(str)
-	cChar := CountChar(str)
+func findNoParents(base []*Node) []*Node {
+	var it = &Node{nil, nil, nil, 0, 0}
+	var res []*Node
+	var ret []*Node
 
-	// generate all character nodes with their distributaions
-	var nodes []*Node
-	for _, v := range formChar {
-		nodes = append(nodes, &Node{Char: v, Dist: float32(cChar[v]) / float32(len(str))})
-	}
-
-	// add a node with two leafs of lowest distribution
-	for i := 0; addNode(nodes) == false; i++ {
-	}
-
-	// find master node
-	n := nodes[len(nodes)-1]
-	for n.Parent != nil {
-		n = n.Parent
-	}
-
-	// return the master node
-	return n
-}
-
-// PrintTree prints a tree by it's base for debuging
-// base must be sorted by the node's ditribution
-func PrintTree(master *Node, indent int) {
-	n := master
-	if n.One != nil {
-		PrintTree(n.One, indent+55)
-	}
-	if n.Zero != nil {
-		PrintTree(n.Zero, indent+55)
-	}
-	if indent != 0 {
-		for i := 0; i < indent; i++ {
-			fmt.Print(" ")
-		}
-	}
-	fmt.Println(n.String())
-
-}
-
-// addTreeLayer adds a layer of parent nodes with the correct encoding
-func addNode(base []*Node) bool {
-	// finds the two parent less nodes with lowest dist
-	lowest, secLowest := findLowestDist(base)
-	// finished building tree, you can stop
-	if secLowest == nil {
-		return true
-	}
-	// create new node with connections to them
-	added := Node{Zero: secLowest, One: lowest, Dist: lowest.Dist + secLowest.Dist}
-
-	// assign parents
-	lowest.Parent = &added
-	secLowest.Parent = &added
-	return false
-}
-
-// findLowestDist finds the node with the lowest dist in the tree
-func findLowestDist(base []*Node) (*Node, *Node) {
-	var noParent []*Node
-	var s *Node
-
-	// get all nodes with no parent
+	// iterate over all of base
 	for _, v := range base {
-		cont := false
+		// if no parent add to array
 		if v.Parent == nil {
-			noParent = append(noParent, v)
-			continue
+			res = append(res, v)
+		} else {
+			// if has parent go up the chain till you find one that doesnt have a parent
+			it = v.Parent
+			for it.Parent != nil {
+				it = it.Parent
+			}
+			// when found the one that did not have a parent add it
+			res = append(res, it)
 		}
-		// go up the tree to find a node without a parent
-		s = v
-		for s.Parent != nil {
-			s = s.Parent
-		}
-		// dont append nodes that are already in the noParent slice
-		for _, j := range noParent {
-			if j == s {
-				cont = true
+	}
+
+	// remove duplicates
+	for _, v := range res {
+		var found = false
+		for _, l := range ret {
+			if v == l {
+				found = true
 			}
 		}
-		if !cont {
-			// append new node
-			noParent = append(noParent, s)
+		if !found {
+			ret = append(ret, v)
 		}
 	}
 
-	// this is the last node, we finished building binary tree
-	if len(noParent) == 1 {
-		return noParent[0], nil
-	}
+	// return without duplicates
+	return ret
+}
 
-	lowest := noParent[0]
-	secLowest := noParent[1]
-	// find two parentless nodes with lowest distribution
+func findLowestDist(base []*Node) (*Node, *Node) {
+	var noParent = findNoParents(base)
+
+	// find two lowest nodes
+	var lowest float32 = 1
+	var lowestNode *Node
+	var secLowest float32 = 1
+	var secLowestNode *Node
+
+	// find absolute lowest node
 	for _, v := range noParent {
-		// find the lowest distribution
-		if v.Dist < secLowest.Dist {
-			if v.Dist < lowest.Dist {
-				lowest = v
-			} else {
-				secLowest = v
-			}
+		if v.Dist < lowest {
+			lowest = v.Dist
+			lowestNode = v
 		}
 	}
-	// return the two nodes with the lowest distribution
-	return lowest, secLowest
+
+	// find second lowest node
+	for _, v := range noParent {
+		if v.Dist < secLowest && v != lowestNode {
+			secLowest = v.Dist
+			secLowestNode = v
+		}
+	}
+
+	// return the two nodes with the least distribution
+	return lowestNode, secLowestNode
 }
