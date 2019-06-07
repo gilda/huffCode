@@ -12,11 +12,13 @@ func traverse(master *bintree.Node, base *bintree.Node) string {
 	var it *bintree.Node = base
 	var ret = ""
 
+	// get the upward chain
 	for it.Parent != nil {
 		chain = append(chain, it.Parent)
 		it = it.Parent
 	}
 
+	// traverse the chain and get the encoding
 	for i := len(chain); i > 1; i-- {
 		if chain[i-2] == chain[i-1].One {
 			ret += "1"
@@ -36,8 +38,8 @@ func printCodes(master *bintree.Node, base []*bintree.Node) {
 	}
 }
 
-// WriteEncodingToFile writes the encoding to a file
-func WriteEncodingToFile(str string, filePath string) {
+// Encode writes the encoding to a file
+func Encode(str string) {
 	fmt.Println()
 	//os.Create(filePath)
 
@@ -50,9 +52,15 @@ func WriteEncodingToFile(str string, filePath string) {
 		base = append(base, &bintree.Node{Char: v, Dist: float32(cChar[v]) / float32(len(str))})
 	}
 
-	for _, v := range base {
-		fmt.Println(v)
-	}
-	fmt.Println(bintree.GenTree(base))
 	printCodes(bintree.GenTree(base), base)
+	fmt.Println()
+
+	for _, v := range str {
+		for _, c := range base {
+			if byte(v) == c.Char {
+				fmt.Print(traverse(bintree.GenTree(base), c))
+			}
+		}
+	}
+	fmt.Println()
 }
